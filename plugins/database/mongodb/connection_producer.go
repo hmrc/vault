@@ -129,8 +129,8 @@ func createClient(ctx context.Context, connURL string, clientOptions *options.Cl
 	if clientOptions == nil {
 		clientOptions = options.Client()
 	}
-	clientOptions.SetSocketTimeout(1 * time.Minute)
-	clientOptions.SetConnectTimeout(1 * time.Minute)
+	clientOptions.SetSocketTimeout(10 * time.Second)
+	clientOptions.SetConnectTimeout(10 * time.Second)
 
 	opts := clientOptions.ApplyURI(connURL)
 	client, err = mongo.Connect(ctx, opts)
@@ -146,7 +146,7 @@ func (c *mongoDBConnectionProducer) Close() error {
 	defer c.Unlock()
 
 	if c.client != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := c.client.Disconnect(ctx); err != nil {
 			return err
