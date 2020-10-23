@@ -14,7 +14,7 @@ pipeline {
         }
 
         stage('Build') {
-            agent { docker { image 'golang:1.15.2' } }
+            agent { docker { image 'golang:1.14.7' } }
             steps{
                 sh 'go get github.com/mitchellh/gox'
                 sh 'make'
