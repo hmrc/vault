@@ -14,10 +14,10 @@ pipeline {
         }
 
         stage('Build') {
-            agent { docker { image 'golang:1.14.7' } }
+            agent { dockerfile true }
             steps{
                 sh 'go get github.com/mitchellh/gox'
-                sh 'make'
+                sh 'XC_OSARCH=linux/amd64 make bootstrap static-assets bin'
                 archiveArtifacts 'bin/vault'
                 stash includes: 'bin/', name: 'bin'
             }
