@@ -17,7 +17,7 @@ pipeline {
             agent { dockerfile true }
             steps{
                 sh 'go get github.com/mitchellh/gox'
-                sh 'XC_OSARCH=linux/amd64 make bootstrap static-assets bin'
+                sh 'XC_OSARCH=linux/amd64 make bootstrap static-dist bin'
                 archiveArtifacts 'bin/vault'
                 stash includes: 'bin/', name: 'bin'
             }
