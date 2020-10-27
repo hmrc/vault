@@ -16,7 +16,7 @@ pipeline {
           agent {
             dockerfile {
               filename 'scripts/cross/Dockerfile'
-              args '-v "$(pwd)":/gopath/src/github.com/hashicorp/vault -w /gopath/src/github.com/hashicorp/vault'
+              args "-v ${env.WORKSPACE}:/gopath/src/github.com/hashicorp/vault -w /gopath/src/github.com/hashicorp/vault"
             }
           }
           steps{
