@@ -20,7 +20,8 @@ pipeline {
             }
           }
           steps{
-            sh 'XC_OSARCH=linux/amd64 make static-dist bin'
+            sh 'docker build -t vault-build -f scripts/cross/Dockerfile .'
+            sh "docker run --rm -v ${WORKSPACE}:/gopath/src/github.com/hashicorp/vault -w /gopath/src/github.com/hashicorp/vault -e XC_OSARCH=linux/amd64 vault-build"
             archiveArtifacts 'pkg/linux_amd64/vault'
             stash includes: 'pkg', name: 'pkg'
           }
