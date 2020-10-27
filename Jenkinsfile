@@ -1,24 +1,22 @@
 #!groovy
 pipeline {
-    agent any
-    environment {
-        UID = sh(script: "id -u ${USER}", returnStdout: true).trim()
-        GID = sh(script: "id -g ${USER}", returnStdout: true).trim()
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
     }
 
-    stages {
-        stage('Checkout') {
-          steps {
-            checkout scm
-          }
-        }
-
-        stage('Build') {
-          steps{
-            sh 'docker build -t vault-build -f scripts/cross/Dockerfile .'
-            sh "docker run -u ${env.UID}:${env.GID} --rm -v ${WORKSPACE}:/gopath/src/github.com/hashicorp/vault -w /gopath/src/github.com/hashicorp/vault -e HOME=/gopath/src/github.com/hashicorp/vault -e XDG_CACHE_HOME=/tmp -e XC_OSARCH=linux/amd64 vault-build"
-            sh 'aws s3 cp pkg/linux_amd64/vault s3://mdtp-vault-binary-d10af457daa1deed54e2c36b5f295e7e/vault --acl=bucket-owner-full-control'
-          }
-        }
+    stage('Build') {
+      steps {
+        sh 'docker build -t vault-build -f scripts/cross/Dockerfile .'
+        sh "docker run --rm -v ${WORKSPACE}:/gopath/src/github.com/hashicorp/vault -w /gopath/src/github.com/hashicorp/vault -e XC_OSARCH=linux/amd64 vault-build"
+        sh "docker run --rm -v ${WORKSPACE}:/gopath/src/github.com/hashicorp/vault -w /gopath/src/github.com/hashicorp/vault alpine chmod -R 0777 ."
+        sh 'aws s3 cp pkg/linux_amd64/vault s3://mdtp-vault-binary-d10af457daa1deed54e2c36b5f295e7e/vault --acl=bucket-owner-full-control'
+      }
     }
+  }
 }
+
