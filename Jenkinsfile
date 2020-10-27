@@ -1,5 +1,4 @@
 #!groovy
-
 pipeline {
     agent any
     environment {
@@ -8,25 +7,29 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps {
-              checkout scm
-            }
+          steps {
+            checkout scm
+          }
         }
 
         stage('Build') {
-            agent { dockerfile true }
-            steps{
-                sh 'go get github.com/mitchellh/gox'
-                sh 'XC_OSARCH=linux/amd64 make bootstrap static-dist bin'
-                archiveArtifacts 'bin/vault'
-                stash includes: 'bin/', name: 'bin'
+          agent {
+            dockerfile {
+              filename 'scripts/cross/Dockerfile'
+              args '-v "$(pwd)":/gopath/src/github.com/hashicorp/vault -w /gopath/src/github.com/hashicorp/vault'
             }
+          }
+          steps{
+            sh 'XC_OSARCH=linux/amd64 make static-dist bin'
+            archiveArtifacts 'pkg/linux_amd64/vault'
+            stash includes: 'pkg', name: 'pkg'
+          }
         }
 
         stage('Upload to S3') {
-            steps{
-                unstash 'bin'
-                sh 'aws s3 cp bin/vault s3://mdtp-vault-binary-d10af457daa1deed54e2c36b5f295e7e/vault --acl=bucket-owner-full-control'
+            steps {
+              unstash 'pkg'
+              sh 'aws s3 cp pkg/linux_amd64/vault s3://mdtp-vault-binary-d10af457daa1deed54e2c36b5f295e7e/vault --acl=bucket-owner-full-control'
             }
         }
     }
